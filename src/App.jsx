@@ -163,7 +163,11 @@ export default function Matchcast() {
 
   useEffect(() => { runDemo(); }, []);
 
-  if (page === "app") return <PredictionApp onBack={() => setPage("landing")} />;
+  if (page === "app") return (
+    <div style={{background:"#0b0b17",minHeight:"100vh"}}>
+      <PredictionApp onBack={() => setPage("landing")} />
+    </div>
+  );
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg }}>
@@ -1252,5 +1256,9 @@ function MatchcastPredictApp(){
 
 
 function MatchcastApp() {
-  return <MatchcastPredictApp />;
+  return (
+    <div style={{background:"#0b0b17",minHeight:"100vh"}}>
+      <MatchcastPredictApp />
+    </div>
+  );
 }

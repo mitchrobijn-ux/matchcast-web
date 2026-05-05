@@ -1,5 +1,15 @@
 import { useState, useMemo } from "react";
 
+const BACKEND_URL = "https://matchcast-backend-production.up.railway.app";
+
+const shortName = (t) => {
+  if(!t) return "";
+  if(t.length <= 12) return t;
+  const words = t.split(" ");
+  if(words.length >= 2) return words[0] + " " + words[1].slice(0,3) + ".";
+  return t.slice(0,12);
+};
+
 // ── WK Data ──────────────────────────────────────────────
 const ELO = {"Spain":2105,"Argentina":2061,"France":2026,"England":1966,"Portugal":1941,"Brazil":1936,"Ecuador":1931,"Colombia":1928,"Netherlands":1925,"Germany":1920,"Japan":1916,"Morocco":1913,"Turkey":1901,"Croatia":1899,"Uruguay":1878,"Mexico":1869,"Senegal":1867,"Norway":1862,"Switzerland":1861,"Italy":1860,"Paraguay":1850,"Australia":1845,"Belgium":1835,"Denmark":1834,"South Korea":1822,"Canada":1819,"Iran":1819,"Austria":1808,"Nigeria":1803,"Algeria":1796,"Russia":1786,"Uzbekistan":1784,"Panama":1783,"Ukraine":1776,"United States":1772,"Scotland":1766,"Egypt":1761,"Venezuela":1759,"Serbia":1757,"Ivory Coast":1752,"Greece":1747,"Poland":1739,"Hungary":1732,"Sweden":1732,"Kosovo":1730,"Chile":1725,"DR Congo":1725,"Iraq":1724,"Czech Republic":1723,"Jordan":1719,"Wales":1713,"Slovenia":1721,"Slovakia":1680,"Republic of Ireland":1704,"Romania":1639,"Georgia":1637,"Israel":1637,"Bosnia and Herzegovina":1632,"North Macedonia":1623,"Albania":1654,"Cape Verde":1652,"Mali":1653,"Burkina Faso":1642,"Saudi Arabia":1665,"United Arab Emirates":1628,"South Africa":1621,"Cameroon":1688,"Tunisia":1699,"Ghana":1598,"Iceland":1592,"Qatar":1578,"Montenegro":1494,"Bolivia":1689,"Peru":1692,"Honduras":1653,"Jamaica":1644,"Haiti":1653,"Costa Rica":1694,"El Salvador":1482,"Guatemala":1618,"Nicaragua":1491,"Trinidad and Tobago":1527,"Curacao":1569,"Kenya":1470,"Uganda":1506,"Zambia":1510,"Angola":1545,"Mozambique":1495,"Namibia":1431,"Zimbabwe":1432,"Gambia":1507,"Libya":1534,"Sudan":1471,"Ethiopia":1400,"Togo":1469,"Benin":1553,"Guinea":1540,"Mauritania":1430,"Malawi":1424,"Rwanda":1444,"Comoros":1460,"Sierra Leone":1472,"Guinea-Bissau":1365,"Congo":1352,"Equatorial Guinea":1451,"Madagascar":1505,"Botswana":1397,"Eswatini":1330,"Lesotho":1421,"Faroe Islands":1442,"Malta":1360,"Cyprus":1386,"Andorra":1168,"Luxembourg":1424,"Liechtenstein":1064,"San Marino":977,"Gibraltar":1143,"China PR":1539,"Thailand":1526,"Malaysia":1498,"Singapore":1336,"Myanmar":1206,"Hong Kong":1346,"Taiwan":1138,"Cambodia":1116,"Philippines":1345,"India":1292,"Pakistan":1096,"Bangladesh":1194,"Nepal":1180,"Sri Lanka":1095,"Afghanistan":1278,"Tajikistan":1442,"Turkmenistan":1396,"Palestine":1565,"Syria":1567,"Lebanon":1448,"Yemen":1331,"New Caledonia":1551,"Fiji":1457,"Vanuatu":1447,"Papua New Guinea":1467,"Solomon Islands":1400,"Tahiti":1502,"Samoa":1309,"Tonga":1174,"Maldives":1124,"Bhutan":995,"Mongolia":1092,"Guam":1087,"American Samoa":1120,"Moldova":1339,"Estonia":1401,"Latvia":1351,"Lithuania":1338,"Finland":1561,"Northern Ireland":1594,"Oman":1590,"Bahrain":1520,"Kuwait":1473,"Azerbaijan":1411,"Armenia":1439,"Kazakhstan":1500,"Kyrgyzstan":1460,"New Zealand":1682,"Curacao":1569,"Curaçao":1569};
 const ATTACK = {"Spain":1.831,"Argentina":1.497,"France":1.58,"England":1.526,"Portugal":1.739,"Brazil":1.413,"Netherlands":1.673,"Germany":1.628,"Belgium":1.756,"Japan":1.805,"Norway":1.537,"Denmark":1.384,"Italy":1.404,"Canada":1.333,"Iran":1.535,"Senegal":1.312,"Morocco":1.354,"Switzerland":1.32,"South Korea":1.275,"Austria":1.34,"New Zealand":1.307,"Turkey":1.242,"Poland":1.208,"Czech Republic":1.244,"Sweden":1.244,"Serbia":1.091,"Nigeria":1.156,"Mexico":1.115,"Israel":1.105,"Jordan":1.161,"Colombia":1.167,"Uruguay":1.03,"Mali":1.074,"Jamaica":1.02,"Slovakia":1.022,"Panama":1.056,"Kyrgyzstan":1.001,"Tunisia":1.045,"United Arab Emirates":1.077,"Georgia":1.149,"Uzbekistan":1.111,"Algeria":1.6,"United States":1.384,"Australia":1.375,"Russia":1.459,"Qatar":1.136,"Ivory Coast":1.23,"Burkina Faso":1.059,"Saudi Arabia":0.916,"Ecuador":0.885,"Wales":0.973,"Chile":0.928,"Romania":1.129,"Greece":1.071,"Iceland":1.04,"Kosovo":1.041,"North Macedonia":1.008,"South Africa":1.049,"Egypt":1.097,"Cameroon":0.927,"Ghana":0.953,"DR Congo":0.919,"Iraq":0.967,"Angola":0.749,"Bosnia and Herzegovina":0.931,"Slovenia":0.918,"Zambia":0.897,"Albania":0.817,"Kenya":0.826,"Peru":0.718,"Republic of Ireland":0.791,"Croatia":1.302,"Paraguay":0.655,"Bolivia":0.658,"Honduras":0.922,"Costa Rica":1.061,"El Salvador":0.728,"Venezuela":0.817,"Haiti":1.538,"Trinidad and Tobago":1.067,"Curacao":1.313,"Uganda":0.653,"Tanzania":0.586,"Zimbabwe":0.842,"Ethiopia":0.724,"Libya":0.805,"Togo":0.761,"Benin":0.778,"Guinea":0.929,"Sierra Leone":0.769,"Gambia":1.002,"Guinea-Bissau":0.632,"Congo":0.622,"Niger":0.834,"Mauritania":0.548,"Equatorial Guinea":0.752,"Comoros":0.827,"Madagascar":0.897,"Cape Verde":0.853,"Malawi":0.602,"Syria":0.947,"Lebanon":0.798,"Palestine":0.886,"Yemen":0.884,"Kuwait":0.873,"Bahrain":0.966,"China PR":0.929,"North Korea":0.967,"Vietnam":1.192,"Thailand":1.271,"Malaysia":1.303,"Indonesia":1.133,"Philippines":0.952,"Cambodia":0.873,"Myanmar":0.707,"Singapore":0.91,"India":0.87,"Pakistan":0.239,"Bangladesh":0.606,"Nepal":0.549,"Sri Lanka":0.54,"Afghanistan":0.547,"Maldives":0.822,"Kazakhstan":0.761,"Tajikistan":0.975,"Turkmenistan":0.8,"Azerbaijan":0.676,"Armenia":0.894,"Moldova":0.532,"Belarus":0.678,"Ukraine":1.053,"Estonia":0.637,"Latvia":0.626,"Lithuania":0.501,"Finland":0.839,"Faroe Islands":0.618,"Gibraltar":0.267,"Malta":0.516,"Cyprus":0.698,"Andorra":0.26,"Liechtenstein":0.246,"San Marino":0.212,"Luxembourg":0.595,"Scotland":1.017,"Northern Ireland":0.804,"Fiji":1.32,"New Caledonia":1.544,"Papua New Guinea":1.153,"Tahiti":1.479,"Samoa":1.163,"New Zealand":1.307,"Oman":0.916,"South Africa":1.049,"Haiti":1.538,"Bosnia and Herzegovina":0.931,"Curacao":1.313,"Curaçao":1.313};
@@ -737,15 +747,6 @@ export default function MatchcastPredictor(){
           </div>
         </>}
       </div>
-    </div>
-  );
-}
-
-
-function MatchcastApp() {
-  return (
-    <div style={{background:"#0b0b17",minHeight:"100vh"}}>
-      <MatchcastPredictApp />
     </div>
   );
 }

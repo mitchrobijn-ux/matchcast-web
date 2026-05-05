@@ -509,7 +509,7 @@ function PredictionApp({ onBack }) {
           MATCH<span style={{ color: C.green }}>CAST</span>
         </span>
       </div>
-      <MatchcastApp />
+      <MatchcastPredictor />
     </div>
   );
 }

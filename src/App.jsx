@@ -144,6 +144,21 @@ export default function Matchcast() {
   const [waitlistDone, setWaitlistDone] = useState(false);
   const [liveMatch, setLiveMatch] = useState(null);
   const [loadingDemo, setLoadingDemo] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    });
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") setInstallPrompt(null);
+  };
 
   // Demo prediction for landing page
   const runDemo = async () => {
@@ -189,6 +204,13 @@ export default function Matchcast() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <Pill>WK 2026</Pill>
+          {installPrompt && (
+            <button onClick={handleInstall} style={{
+              padding: "0.5rem 1rem", background: "rgba(0,232,122,0.1)",
+              border: `1px solid ${C.greenBorder}`, borderRadius: 10,
+              color: C.green, fontWeight: 700, fontSize: "0.75rem", cursor: "pointer",
+            }}>📲 Installeer</button>
+          )}
           <button onClick={() => setPage("app")} style={{
             padding: "0.5rem 1.1rem", background: C.green, border: "none",
             borderRadius: 10, color: "#000", fontWeight: 700, fontSize: "0.8rem",
@@ -234,6 +256,13 @@ export default function Matchcast() {
           }}>
             Pro bekijken →
           </button>
+        </div>
+        <div className="fadeUp" style={{
+          marginTop: "1rem", fontSize: "0.68rem", color: C.textDim,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+          animationDelay: "0.5s",
+        }}>
+          <span>📲 iPhone: deel-knop → "Zet op beginscherm"</span>
         </div>
 
         {/* Live demo card */}

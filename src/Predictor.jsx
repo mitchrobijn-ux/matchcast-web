@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useAuth, AuthModal, ProModal, UserMenu } from "./Auth.jsx";
+import { useState, useMemo, useEffect } from "react";
+import { useAuth, AuthModal, ProModal, UserMenu, supabase } from "./Auth.jsx";
 
 const BACKEND_URL = "https://matchcast-backend-production.up.railway.app";
 
@@ -304,7 +304,6 @@ function TrackRecord({ user, isPro, onShowPro }) {
     if(!user) { setLoading(false); return; }
     const loadPredictions = async () => {
       try {
-        const { supabase } = await import('./Auth.jsx');
         const { data } = await supabase
           .from('predictions')
           .select('*')
@@ -549,7 +548,6 @@ export default function MatchcastPredictor(){
   const savePrediction = async (r) => {
     if(!user) return;
     try {
-      const { supabase } = await import('./Auth.jsx');
       await supabase.from('predictions').insert({
         user_id: user.id,
         home, away, tournament,

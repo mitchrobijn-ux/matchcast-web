@@ -296,6 +296,102 @@ function OURow({label,prob,odds}){
 }
 
 
+function TrackRecord({ user, isPro, onShowPro }) {
+  const [predictions, setPredictions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if(!user) { setLoading(false); return; }
+    const loadPredictions = async () => {
+      try {
+        const { supabase } = await import('./Auth.jsx');
+        const { data } = await supabase
+          .from('predictions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50);
+        setPredictions(data || []);
+      } catch(e) { console.log('Load predictions fout:', e); }
+      setLoading(false);
+    };
+    loadPredictions();
+  }, [user]);
+
+  const completed = predictions.filter(p => p.correct !== null);
+  const correct = completed.filter(p => p.correct).length;
+  const accuracy = completed.length > 0 ? (correct/completed.length*100).toFixed(0) : null;
+
+  if(!user) return (
+    <div style={{textAlign:"center",padding:"2rem 1rem"}}>
+      <div style={{fontSize:"2rem",marginBottom:"0.75rem"}}>📈</div>
+      <div style={{fontWeight:700,marginBottom:"0.5rem"}}>Track Record</div>
+      <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",marginBottom:"1.5rem"}}>Log in om je voorspellingen bij te houden</div>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{fontFamily:"'Syne',sans-serif",fontSize:"1.15rem",fontWeight:800,marginBottom:"0.2rem"}}>Track Record</div>
+      <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.2)",marginBottom:"1rem"}}>Jouw voorspellingen · WK 2026</div>
+
+      {/* Stats */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0.5rem",marginBottom:"1rem"}}>
+        {[
+          {l:"Voorspellingen",v:predictions.length},
+          {l:"Correct",v:completed.length>0?correct:"—"},
+          {l:"Accuraatheid",v:accuracy?`${accuracy}%`:"—"},
+        ].map(s=>(
+          <div key={s.l} style={{background:"rgba(255,255,255,0.04)",borderRadius:"10px",padding:"0.7rem 0.5rem",textAlign:"center"}}>
+            <div style={{fontSize:"1.2rem",fontWeight:800,color:"#22c55e"}}>{s.v}</div>
+            <div style={{fontSize:"0.55rem",color:"rgba(255,255,255,0.3)",marginTop:"0.2rem"}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Predictions list */}
+      {loading ? (
+        <div style={{textAlign:"center",padding:"2rem",color:"rgba(255,255,255,0.3)"}}>Laden...</div>
+      ) : predictions.length === 0 ? (
+        <div style={{textAlign:"center",padding:"2rem",color:"rgba(255,255,255,0.3)"}}>
+          <div style={{fontSize:"1.5rem",marginBottom:"0.5rem"}}>⚽</div>
+          <div style={{fontSize:"0.78rem"}}>Nog geen voorspellingen — doe je eerste!</div>
+        </div>
+      ) : (
+        <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+          {predictions.map(p=>(
+            <div key={p.id} style={{padding:"0.7rem 0.8rem",background:"rgba(255,255,255,0.03)",border:`1px solid ${p.correct===true?"rgba(34,197,94,0.2)":p.correct===false?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.05)"}`,borderRadius:"10px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}>
+                <span style={{fontSize:"0.78rem",fontWeight:600}}>{p.home} vs {p.away}</span>
+                {p.correct===true&&<span style={{fontSize:"0.65rem",color:"#22c55e",fontWeight:700}}>✅ Correct</span>}
+                {p.correct===false&&<span style={{fontSize:"0.65rem",color:"#f87171",fontWeight:700}}>❌ Fout</span>}
+                {p.correct===null&&<span style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.3)"}}>⏳ Wacht op uitslag</span>}
+              </div>
+              <div style={{display:"flex",gap:"0.5rem",fontSize:"0.65rem",color:"rgba(255,255,255,0.4)"}}>
+                <span>Verwacht: {p.predicted_score_home}–{p.predicted_score_away}</span>
+                {p.actual_score_home!==null&&<span>Uitslag: {p.actual_score_home}–{p.actual_score_away}</span>}
+                <span style={{marginLeft:"auto"}}>{p.match_date}</span>
+              </div>
+              <div style={{display:"flex",gap:"0.4rem",marginTop:"0.3rem"}}>
+                {[
+                  {l:p.home,v:(p.predicted_home_win*100).toFixed(0)+"%",c:"#22c55e"},
+                  {l:"X",v:(p.predicted_draw*100).toFixed(0)+"%",c:"#eab308"},
+                  {l:p.away,v:(p.predicted_away_win*100).toFixed(0)+"%",c:"#ef4444"},
+                ].map(x=>(
+                  <div key={x.l} style={{flex:1,textAlign:"center",padding:"0.2rem",background:"rgba(255,255,255,0.03)",borderRadius:"5px"}}>
+                    <div style={{fontSize:"0.55rem",color:"rgba(255,255,255,0.3)"}}>{x.l.length>8?x.l.slice(0,8)+"...":x.l}</div>
+                    <div style={{fontSize:"0.68rem",fontWeight:700,color:x.c}}>{x.v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProGate({ onUpgrade, feature }) {
   return (
     <div style={{
@@ -405,6 +501,7 @@ export default function MatchcastPredictor(){
       const r=calcMatch(home,away,neutral,tournament);
       setResult(r);
       setHistory(prev=>[{home,away,tournament,neutral,result:r,id:Date.now()},...prev.slice(0,9)]);
+      savePrediction(r);
     }
     setLoading(false);
   };
@@ -448,6 +545,24 @@ export default function MatchcastPredictor(){
     setIntelLines(lines); setShowIntel(true);
   };
 
+  // Sla voorspelling op in Supabase
+  const savePrediction = async (r) => {
+    if(!user) return;
+    try {
+      const { supabase } = await import('./Auth.jsx');
+      await supabase.from('predictions').insert({
+        user_id: user.id,
+        home, away, tournament,
+        predicted_home_win: r.hw,
+        predicted_draw: r.d,
+        predicted_away_win: r.aw,
+        predicted_score_home: r.lsH,
+        predicted_score_away: r.lsA,
+        match_date: new Date().toISOString().split('T')[0],
+      });
+    } catch(e) { console.log('Save prediction fout:', e); }
+  };
+
   const active=oddsResult||result;
   const maxProb=active?Math.max(active.hw,active.d,active.aw):0;
   const winner=active?(active.hw===maxProb?home:active.aw===maxProb?away:"Gelijkspel"):null;
@@ -489,7 +604,7 @@ export default function MatchcastPredictor(){
         <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
           <UserMenu onShowAuth={()=>setShowAuth(true)} onShowPro={()=>setShowPro(true)} />
           <div style={{display:"flex",gap:"2px",background:"rgba(255,255,255,0.04)",borderRadius:"9px",padding:"2px"}}>
-            {[["predict","⚽"],["wk","🏆"],["rankings","📊"]].map(([t,ic])=>(
+            {[["predict","⚽"],["wk","🏆"],["rankings","📊"],["track","📈"]].map(([t,ic])=>(
               <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.6rem",background:tab===t?"rgba(255,255,255,0.1)":"transparent",border:"none",borderRadius:"7px",color:tab===t?"#fff":"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"0.75rem",transition:"all 0.15s"}}>{ic}</button>
             ))}
           </div>
@@ -838,6 +953,7 @@ export default function MatchcastPredictor(){
           </div>
         </>}
       </div>
+        {tab==="track"&&<TrackRecord user={user} isPro={isPro} onShowPro={()=>setShowPro(true)} />}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       {showPro && <ProModal onClose={() => setShowPro(false)} />}
     </div>

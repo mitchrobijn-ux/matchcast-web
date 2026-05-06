@@ -615,14 +615,14 @@ export default function MatchcastPredictor(){
               ) : (
                 <ProGate onUpgrade={()=>setShowPro(true)} feature="O/U markten + BTTS kansen" />
               )}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0.35rem",marginTop:"0.35rem"}}>
+              {isPro && <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0.35rem",marginTop:"0.35rem"}}>
                 {[["ou15","O1.5"],["ou25","O2.5"],["ou35","O3.5"],["btts","BTTS"]].map(([k,l])=>(
                   <div key={k}>
                     <div style={{fontSize:"0.52rem",color:"rgba(255,255,255,0.2)",marginBottom:"0.2rem",textAlign:"center"}}>{l}</div>
                     <input type="number" step="0.01" min="1.01" placeholder="odds" value={ouOdds[k]} onChange={e=>setOuOdds(p=>({...p,[k]:e.target.value}))} style={{width:"100%",padding:"0.4rem 0.3rem",textAlign:"center",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"7px",color:"#fff",fontSize:"0.78rem",fontFamily:"monospace",outline:"none"}}/>
                   </div>
                 ))}
-              </div>
+              </div>}
             </div>
 
             {/* Bookmaker odds */}

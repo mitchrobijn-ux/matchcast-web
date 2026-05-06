@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useAuth, AuthModal, ProModal, UserMenu } from "./Auth.jsx";
 
 const BACKEND_URL = "https://matchcast-backend-production.up.railway.app";
 
@@ -308,6 +309,9 @@ export default function MatchcastPredictor(){
   const [history,setHistory]=useState([]);
   const [loading,setLoading]=useState(false);
   const [liveOddsSource,setLiveOddsSource]=useState("");
+  const [showAuth,setShowAuth]=useState(false);
+  const [showPro,setShowPro]=useState(false);
+  const { user, isPro } = useAuth();
   // Odds state
   const [oH,setOH]=useState(""); const [oD,setOD]=useState(""); const [oA,setOA]=useState("");
   const [ouOdds,setOuOdds]=useState({ou15:"",ou25:"",ou35:"",btts:""});
@@ -458,10 +462,13 @@ export default function MatchcastPredictor(){
             <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.18)",letterSpacing:"0.08em"}}>WK 2026 · AI VOORSPELMODEL · 52.8%</div>
           </div>
         </div>
-        <div style={{display:"flex",gap:"2px",background:"rgba(255,255,255,0.04)",borderRadius:"9px",padding:"2px"}}>
-          {[["predict","⚽"],["wk","🏆"],["rankings","📊"]].map(([t,ic])=>(
-            <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.6rem",background:tab===t?"rgba(255,255,255,0.1)":"transparent",border:"none",borderRadius:"7px",color:tab===t?"#fff":"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"0.75rem",transition:"all 0.15s"}}>{ic}</button>
-          ))}
+        <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+          <UserMenu onShowAuth={()=>setShowAuth(true)} onShowPro={()=>setShowPro(true)} />
+          <div style={{display:"flex",gap:"2px",background:"rgba(255,255,255,0.04)",borderRadius:"9px",padding:"2px"}}>
+            {[["predict","⚽"],["wk","🏆"],["rankings","📊"]].map(([t,ic])=>(
+              <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.6rem",background:tab===t?"rgba(255,255,255,0.1)":"transparent",border:"none",borderRadius:"7px",color:tab===t?"#fff":"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"0.75rem",transition:"all 0.15s"}}>{ic}</button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -795,6 +802,8 @@ export default function MatchcastPredictor(){
           </div>
         </>}
       </div>
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      {showPro && <ProModal onClose={() => setShowPro(false)} />}
     </div>
   );
 }

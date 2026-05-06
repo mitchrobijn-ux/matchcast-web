@@ -360,7 +360,12 @@ export default function MatchcastPredictor(){
           setOH(lo.homeOdds.toFixed(2));
           setOD(lo.drawOdds ? lo.drawOdds.toFixed(2) : "");
           setOA(lo.awayOdds.toFixed(2));
-          if(lo.ou25Odds) setOuOdds(p=>({...p, ou25: lo.ou25Odds.toFixed(2)}));
+          setOuOdds({
+            ou15: lo.ou15Odds ? lo.ou15Odds.toFixed(2) : "",
+            ou25: lo.ou25Odds ? lo.ou25Odds.toFixed(2) : "",
+            ou35: lo.ou35Odds ? lo.ou35Odds.toFixed(2) : "",
+            btts: lo.bttsOdds ? lo.bttsOdds.toFixed(2) : "",
+          });
           setShowOdds(true);
           setLiveOddsSource(lo.bookmaker || "Bookmaker");
         }

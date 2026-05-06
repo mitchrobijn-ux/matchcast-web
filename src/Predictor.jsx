@@ -296,6 +296,30 @@ function OURow({label,prob,odds}){
 }
 
 
+function ProGate({ onUpgrade, feature }) {
+  return (
+    <div style={{
+      padding:"1rem", background:"linear-gradient(135deg,rgba(0,232,122,0.05),rgba(0,196,255,0.05))",
+      border:"1px solid rgba(0,232,122,0.15)", borderRadius:"12px",
+      textAlign:"center",
+    }}>
+      <div style={{fontSize:"1.1rem",marginBottom:"0.35rem"}}>🔒</div>
+      <div style={{fontSize:"0.75rem",fontWeight:700,marginBottom:"0.25rem"}}>{feature}</div>
+      <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.4)",marginBottom:"0.75rem"}}>
+        Beschikbaar in Matchcast Pro
+      </div>
+      <button onClick={onUpgrade} style={{
+        padding:"0.55rem 1.25rem",
+        background:"linear-gradient(135deg,#00e87a,#00c4ff)",
+        border:"none", borderRadius:"8px",
+        color:"#000", fontWeight:700, fontSize:"0.75rem", cursor:"pointer",
+      }}>
+        ⚡ Upgrade naar Pro — €9.99/mnd
+      </button>
+    </div>
+  );
+}
+
 export default function MatchcastPredictor(){
   const [home,setHome]=useState("Netherlands");
   const [away,setAway]=useState("Germany");
@@ -581,12 +605,16 @@ export default function MatchcastPredictor(){
             {/* Over/Under markten */}
             <div style={{padding:"0 0.9rem 0.7rem"}}>
               <div style={{fontSize:"0.55rem",fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:"0.1em",marginBottom:"0.35rem"}}>OVER/UNDER MARKTEN</div>
-              <div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"0.5rem 0.7rem"}}>
-                <OURow label="Over 1.5 goals" prob={active.ou15} odds={ouOdds.ou15}/>
-                <OURow label="Over 2.5 goals" prob={active.ou25} odds={ouOdds.ou25}/>
-                <OURow label="Over 3.5 goals" prob={active.ou35} odds={ouOdds.ou35}/>
-                <OURow label="Beide teams scoren (BTTS)" prob={active.btts} odds={ouOdds.btts}/>
-              </div>
+              {isPro ? (
+                <div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"0.5rem 0.7rem"}}>
+                  <OURow label="Over 1.5 goals" prob={active.ou15} odds={ouOdds.ou15}/>
+                  <OURow label="Over 2.5 goals" prob={active.ou25} odds={ouOdds.ou25}/>
+                  <OURow label="Over 3.5 goals" prob={active.ou35} odds={ouOdds.ou35}/>
+                  <OURow label="Beide teams scoren (BTTS)" prob={active.btts} odds={ouOdds.btts}/>
+                </div>
+              ) : (
+                <ProGate onUpgrade={()=>setShowPro(true)} feature="O/U markten + BTTS kansen" />
+              )}
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0.35rem",marginTop:"0.35rem"}}>
                 {[["ou15","O1.5"],["ou25","O2.5"],["ou35","O3.5"],["btts","BTTS"]].map(([k,l])=>(
                   <div key={k}>
@@ -600,9 +628,13 @@ export default function MatchcastPredictor(){
             {/* Bookmaker odds */}
             <div style={{padding:"0 0.9rem 0.7rem"}}>
               {!showOdds?(
+                isPro ? (
                 <button onClick={()=>setShowOdds(true)} style={{width:"100%",padding:"0.65rem",background:"rgba(168,85,247,0.07)",border:"1px solid rgba(168,85,247,0.18)",borderRadius:"10px",color:"#a855f7",fontSize:"0.72rem",fontWeight:700,cursor:"pointer"}}>
                   📈 Voeg 1X2 odds toe → ontdek value bets
                 </button>
+                ) : (
+                <ProGate onUpgrade={()=>setShowPro(true)} feature="Value bet detectie + automatische odds" />
+                )
               ):(
                 <div style={{background:"rgba(168,85,247,0.05)",border:"1px solid rgba(168,85,247,0.12)",borderRadius:"12px",padding:"0.75rem"}}>
                   <div style={{fontSize:"0.58rem",fontWeight:700,color:"#a855f7",marginBottom:"0.5rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -663,9 +695,13 @@ export default function MatchcastPredictor(){
             {/* Wedstrijd analyse */}
             <div style={{padding:"0 0.9rem 0.9rem"}}>
               {!showIntel?(
+                isPro ? (
                 <button onClick={runIntel} style={{width:"100%",padding:"0.65rem",background:"rgba(34,211,238,0.05)",border:"1px solid rgba(34,211,238,0.12)",borderRadius:"10px",color:"#22d3ee",fontSize:"0.72rem",fontWeight:700,cursor:"pointer"}}>
                   🧠 Wedstrijd analyse
                 </button>
+                ) : (
+                <ProGate onUpgrade={()=>setShowPro(true)} feature="AI wedstrijd analyse" />
+                )
               ):(
                 <div style={{background:"rgba(34,211,238,0.04)",border:"1px solid rgba(34,211,238,0.1)",borderRadius:"12px",padding:"0.75rem"}}>
                   <div style={{fontSize:"0.55rem",fontWeight:700,color:"#22d3ee",marginBottom:"0.45rem",letterSpacing:"0.1em"}}>🧠 WEDSTRIJD ANALYSE</div>

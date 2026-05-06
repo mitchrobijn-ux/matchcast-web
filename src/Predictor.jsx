@@ -307,6 +307,7 @@ export default function MatchcastPredictor(){
   const [wcRound,setWcRound]=useState("all");
   const [history,setHistory]=useState([]);
   const [loading,setLoading]=useState(false);
+  const [liveOddsSource,setLiveOddsSource]=useState("");
   // Odds state
   const [oH,setOH]=useState(""); const [oD,setOD]=useState(""); const [oA,setOA]=useState("");
   const [ouOdds,setOuOdds]=useState({ou15:"",ou25:"",ou35:"",btts:""});
@@ -352,6 +353,17 @@ export default function MatchcastPredictor(){
         };
         setResult(r);
         setHistory(prev=>[{home,away,tournament,neutral,result:r,id:Date.now()},...prev.slice(0,9)]);
+
+        // Auto-vul odds als backend live odds heeft gevonden
+        if(data.liveOdds && data.liveOdds.homeOdds) {
+          const lo = data.liveOdds;
+          setOH(lo.homeOdds.toFixed(2));
+          setOD(lo.drawOdds ? lo.drawOdds.toFixed(2) : "");
+          setOA(lo.awayOdds.toFixed(2));
+          if(lo.ou25Odds) setOuOdds(p=>({...p, ou25: lo.ou25Odds.toFixed(2)}));
+          setShowOdds(true);
+          setLiveOddsSource(lo.bookmaker || "Bookmaker");
+        }
       } else {
         throw new Error("Backend niet bereikbaar");
       }
@@ -474,38 +486,69 @@ export default function MatchcastPredictor(){
 
           {active&&<div className="pop" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"16px",overflow:"hidden",marginBottom:"0.65rem"}}>
 
-            {/* Score header */}
-            <div style={{padding:"1.1rem 1rem 0.7rem",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
-              <div style={{textAlign:"center",marginBottom:"0.6rem"}}>
-                <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.1em",marginBottom:"0.5rem"}}>MEEST WAARSCHIJNLIJKE UITSLAG</div>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0.75rem"}}>
-                  <div style={{textAlign:"center",flex:1}}>
-                    <div style={{fontSize:"1.7rem"}}>{f(home)}</div>
-                    <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.4)",marginTop:"2px",lineHeight:1.2}}>{home}</div>
-                    <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>ELO {active.homeElo}</div>
-                  </div>
-                  <div style={{textAlign:"center",flexShrink:0}}>
-                    <div style={{fontFamily:"'Syne',sans-serif",fontSize:"2.4rem",fontWeight:800,lineHeight:1,color:"#fff"}}>{active.lsH}<span style={{color:"rgba(255,255,255,0.2)",margin:"0 3px"}}>–</span>{active.lsA}</div>
-                    {active.oddsApplied&&<div style={{fontSize:"0.5rem",color:"#a855f7",marginTop:"3px",fontWeight:700}}>📈 ODDS VERWERKT</div>}
-                  {active.fromBackend
-                    ? <div style={{fontSize:"0.58rem",color:"#22d3ee",marginTop:"4px",fontWeight:700,letterSpacing:"0.05em"}}>🔗 LIVE BACKEND • {active.modelUsed||"MODEL"}</div>
-                    : <div style={{fontSize:"0.58rem",color:"#facc15",marginTop:"4px",fontWeight:700,letterSpacing:"0.05em"}}>📱 LOKAAL MODEL • ~53% accuraatheid</div>
-                  }
-                  {active.liveData&&active.liveData.used&&<div style={{fontSize:"0.58rem",color:"#4ade80",marginTop:"3px",fontWeight:700}}>⚡ LIVE DATA • BLESSURES + VORM</div>}
-                  </div>
-                  <div style={{textAlign:"center",flex:1}}>
-                    <div style={{fontSize:"1.7rem"}}>{f(away)}</div>
-                    <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.4)",marginTop:"2px",lineHeight:1.2}}>{away}</div>
-                    <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>ELO {active.awayElo}</div>
+            {/* Score header — clean professional design */}
+            <div style={{padding:"1.25rem 1rem 1rem",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+
+              {/* Teams row */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}}>
+                {/* Home team */}
+                <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
+                  <span style={{fontSize:"2rem"}}>{f(home)}</span>
+                  <div>
+                    <div style={{fontSize:"0.82rem",fontWeight:700,lineHeight:1.2}}>{home}</div>
+                    <div style={{fontSize:"0.55rem",color:"rgba(255,255,255,0.25)",marginTop:"2px"}}>ELO {active.homeElo}</div>
                   </div>
                 </div>
-                {winner&&<div style={{marginTop:"0.6rem"}}>
-                  <span style={{display:"inline-block",padding:"0.25rem 0.8rem",background:winner===home?"rgba(34,197,94,0.12)":winner===away?"rgba(239,68,68,0.1)":"rgba(234,179,8,0.1)",border:`1px solid ${winner===home?"rgba(34,197,94,0.25)":winner===away?"rgba(239,68,68,0.2)":"rgba(234,179,8,0.2)"}`,borderRadius:"20px",fontSize:"0.68rem",fontWeight:700,color:winner===home?"#4ade80":winner===away?"#f87171":"#fbbf24"}}>
-                    {winner==="Gelijkspel"?"🤝 Gelijkspel meest waarschijnlijk":`${f(winner)} ${winner} wint — ${(maxProb*100).toFixed(0)}%`}
-                  </span>
-                </div>}
+
+                {/* Score */}
+                <div style={{textAlign:"center",flexShrink:0,padding:"0 0.75rem"}}>
+                  <div style={{
+                    fontSize:"2rem",fontWeight:700,lineHeight:1,
+                    letterSpacing:"0.05em",color:"#fff",
+                    fontVariantNumeric:"tabular-nums",
+                  }}>
+                    <span>{active.lsH}</span>
+                    <span style={{color:"rgba(255,255,255,0.2)",margin:"0 6px",fontSize:"1.4rem"}}>:</span>
+                    <span>{active.lsA}</span>
+                  </div>
+                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>VERWACHT</div>
+                </div>
+
+                {/* Away team */}
+                <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1,justifyContent:"flex-end",textAlign:"right"}}>
+                  <div>
+                    <div style={{fontSize:"0.82rem",fontWeight:700,lineHeight:1.2}}>{away}</div>
+                    <div style={{fontSize:"0.55rem",color:"rgba(255,255,255,0.25)",marginTop:"2px"}}>ELO {active.awayElo}</div>
+                  </div>
+                  <span style={{fontSize:"2rem"}}>{f(away)}</span>
+                </div>
               </div>
+
+              {/* Win probability bar */}
               <ProbBar hw={active.hw} d={active.d} aw={active.aw} home={home} away={away}/>
+
+              {/* Winner badge + model badge */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"0.65rem",flexWrap:"wrap",gap:"0.35rem"}}>
+                {winner&&<span style={{
+                  display:"inline-flex",alignItems:"center",gap:"0.35rem",
+                  padding:"0.2rem 0.65rem",
+                  background:winner===home?"rgba(34,197,94,0.1)":winner===away?"rgba(239,68,68,0.08)":"rgba(234,179,8,0.08)",
+                  border:`1px solid ${winner===home?"rgba(34,197,94,0.2)":winner===away?"rgba(239,68,68,0.15)":"rgba(234,179,8,0.15)"}`,
+                  borderRadius:"20px",fontSize:"0.65rem",fontWeight:600,
+                  color:winner===home?"#4ade80":winner===away?"#f87171":"#fbbf24",
+                }}>
+                  {winner==="Gelijkspel"?"🤝 Gelijkspel waarschijnlijkst":`${f(winner)} ${winner} wint — ${(maxProb*100).toFixed(0)}%`}
+                </span>}
+                <span style={{
+                  fontSize:"0.55rem",fontWeight:600,
+                  color:active.fromBackend?"#22d3ee":"#facc15",
+                  opacity:0.8,
+                }}>
+                  {active.fromBackend?"🔗 Live backend":"📱 Lokaal model"}
+                  {active.oddsApplied&&<span style={{color:"#a855f7",marginLeft:"0.4rem"}}>· odds verwerkt</span>}
+                  {active.liveData&&active.liveData.used&&<span style={{color:"#4ade80",marginLeft:"0.4rem"}}>· live data</span>}
+                </span>
+              </div>
             </div>
 
             {/* Stats grid */}
@@ -551,7 +594,7 @@ export default function MatchcastPredictor(){
               ):(
                 <div style={{background:"rgba(168,85,247,0.05)",border:"1px solid rgba(168,85,247,0.12)",borderRadius:"12px",padding:"0.75rem"}}>
                   <div style={{fontSize:"0.58rem",fontWeight:700,color:"#a855f7",marginBottom:"0.5rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span>📈 BOOKMAKER ODDS (decimaal)</span>
+                    <span>📈 BOOKMAKER ODDS (decimaal){liveOddsSource&&<span style={{color:"#4ade80",marginLeft:"0.4rem"}}>· {liveOddsSource} ⚡</span>}</span>
                     {vigPct&&<span style={{color:parseFloat(vigPct)>8?"#f87171":parseFloat(vigPct)>5?"#fbbf24":"#4ade80"}}>Vig: {vigPct}%</span>}
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0.4rem",marginBottom:"0.5rem"}}>

@@ -444,6 +444,7 @@ export default function MatchcastPredictor(){
     setOddsResult(null);
     setShowOdds(false); setShowIntel(false); setIntelLines([]);
     setOH(""); setOD(""); setOA(""); setOuOdds({ou15:"",ou25:"",ou35:"",btts:""});
+    setSavedId(null);
 
     try {
       // Probeer backend eerst
@@ -545,10 +546,12 @@ export default function MatchcastPredictor(){
   };
 
   // Sla voorspelling op in Supabase
+  const [savedId, setSavedId] = useState(null);
+
   const savePrediction = async (r) => {
-    if(!user) return;
+    if(!user || !r) return;
     try {
-      await supabase.from('predictions').insert({
+      const { data, error } = await supabase.from('predictions').insert({
         user_id: user.id,
         home, away, tournament,
         predicted_home_win: r.hw,
@@ -557,7 +560,8 @@ export default function MatchcastPredictor(){
         predicted_score_home: r.lsH,
         predicted_score_away: r.lsA,
         match_date: new Date().toISOString().split('T')[0],
-      });
+      }).select();
+      if(!error && data) setSavedId(data[0]?.id);
     } catch(e) { console.log('Save prediction fout:', e); }
   };
 
@@ -830,6 +834,19 @@ export default function MatchcastPredictor(){
               )}
             </div>
           </div>}
+
+          {/* Sla op knop */}
+          {active&&user&&(
+            <button onClick={()=>{savePrediction(oddsResult||result);}} style={{
+              width:"100%",padding:"0.6rem",marginBottom:"0.65rem",
+              background:savedId?"rgba(34,197,94,0.15)":"rgba(34,197,94,0.08)",
+              border:`1px solid ${savedId?"rgba(34,197,94,0.4)":"rgba(34,197,94,0.2)"}`,
+              borderRadius:"10px",color:"#22c55e",
+              fontSize:"0.72rem",fontWeight:700,cursor:"pointer",
+            }}>
+              {savedId?"✅ Opgeslagen in track record":"💾 Sla voorspelling op in track record"}
+            </button>
+          )}
 
           {/* History */}
           {history.length>0&&<div>

@@ -422,10 +422,7 @@ export default function Matchcast() {
               { text: "AI wedstrijd analyse" },
             ]}
             cta="Pro starten — €9.99/mnd"
-            onCta={() => {
-              setEmail("");
-              document.getElementById("waitlist").scrollIntoView({ behavior: "smooth" });
-            }}
+            onCta={() => window.open("https://buy.stripe.com/7sY9AMajN3GN7HLajs97G00", "_blank")}
           />
           <PriceCard
             tier="ELITE"
@@ -458,9 +455,12 @@ export default function Matchcast() {
           <h2 style={{ fontFamily: "'Bebas Neue'", fontSize: "2rem", lineHeight: 1, marginBottom: "0.75rem" }}>
             WEES ER ALS EERSTE<br /><span style={{ color: C.green }}>PRO LANCERING WK 2026</span>
           </h2>
-          <p style={{ fontSize: "0.82rem", color: C.textSub, marginBottom: "1.5rem", lineHeight: 1.6 }}>
-            Pro lanceert vóór 11 juni. Meld je aan voor vroege toegang en 50% korting op de eerste maand.
+          <p style={{ fontSize: "0.82rem", color: C.textSub, marginBottom: "1rem", lineHeight: 1.6 }}>
+            Pro is nu beschikbaar voor €9.99/mnd. Meld je aan of start direct.
           </p>
+          <button onClick={() => window.open("https://buy.stripe.com/7sY9AMajN3GN7HLajs97G00", "_blank")} style={{ width: "100%", padding: "0.85rem", background: C.green, border: "none", borderRadius: 12, color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", marginBottom: "0.75rem" }}>
+            🚀 Start Matchcast Pro — €9.99/mnd
+          </button>
           {waitlistDone ? (
             <div style={{ padding: "1rem", background: C.greenDim, borderRadius: 12, color: C.green, fontWeight: 700 }}>
               ✅ Je staat op de lijst! We mailen je vóór 11 juni.

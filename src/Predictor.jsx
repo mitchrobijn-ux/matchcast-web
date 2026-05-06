@@ -166,11 +166,20 @@ function calcMatch(home, away, neutral=false, tournament="Friendly"){
   // BTTS
   let btts=0;
   for(let i=1;i<9;i++) for(let j=1;j<9;j++) btts+=poissonPMF(i,lhOU)*poissonPMF(j,laOU);
+  // Meest waarschijnlijke WINNENDE score apart berekenen
+  let winH=0,winA=0,winP=0,loseH=0,loseA=0,loseP=0;
+  for(let i=0;i<9;i++) for(let j=0;j<9;j++){
+    const p=poissonPMF(i,lh)*poissonPMF(j,la);
+    if(i>j&&p>winP){winP=p;winH=i;winA=j;}   // thuis wint
+    if(j>i&&p>loseP){loseP=p;loseH=i;loseA=j;} // uit wint
+  }
   return {hw:hw/t,d:d/t,aw:aw/t,lh,la,lsH,lsA,
+    winningH:winH,winningA:winA,  // meest waarschijnlijke thuiswinst score
+    losingH:loseH,losingA:loseA,  // meest waarschijnlijke uitwinst score
     homeElo:ELO[home]||1500,awayElo:ELO[away]||1500,
     ou15,ou25,ou35,btts,
-    totalGoals:lhOU+laOU,  // gecalibreerde totaal (consistent met O/U)
-    lhDisplay:lhOU,laDisplay:laOU};  // voor weergave
+    totalGoals:lhOU+laOU,
+    lhDisplay:lhOU,laDisplay:laOU};
 }
 
 function fuseOdds(m,oH,oD,oA){
@@ -455,6 +464,14 @@ export default function MatchcastPredictor(){
         // Meest waarschijnlijke uitslag berekenen
         const lsH = data.likelyHome !== undefined ? data.likelyHome : Math.round(data.lambdaHome);
         const lsA = data.likelyAway !== undefined ? data.likelyAway : Math.round(data.lambdaAway);
+        // Bereken winnende scores lokaal op basis van backend lambdas
+        let winH=0,winA=0,winP=0,loseH=0,loseA=0,loseP=0;
+        const lh_b=data.lambdaHome||1.2, la_b=data.lambdaAway||1.0;
+        for(let i=0;i<9;i++) for(let j=0;j<9;j++){
+          const p=poissonPMF(i,lh_b)*poissonPMF(j,la_b);
+          if(i>j&&p>winP){winP=p;winH=i;winA=j;}
+          if(j>i&&p>loseP){loseP=p;loseH=i;loseA=j;}
+        }
         const r = {
           hw: data.homeWin,
           d: data.draw,
@@ -462,6 +479,8 @@ export default function MatchcastPredictor(){
           lh: data.lambdaHome,
           la: data.lambdaAway,
           lsH, lsA,
+          winningH:winH, winningA:winA,
+          losingH:loseH, losingA:loseA,
           homeElo: data.homeElo,
           awayElo: data.awayElo,
           ou15: data.ou15 || 0,
@@ -664,7 +683,23 @@ export default function MatchcastPredictor(){
                     <span style={{color:"rgba(255,255,255,0.2)",margin:"0 6px",fontSize:"1.4rem"}}>:</span>
                     <span>{active.lsA}</span>
                   </div>
-                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>VERWACHT</div>
+                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>MEEST WAARSCHIJNLIJK</div>
+                  {/* Winnende score */}
+                  {active.hw>active.aw&&active.winningH!==undefined&&(
+                    <div style={{fontSize:"0.52rem",color:"#22c55e",marginTop:"3px",fontWeight:600}}>
+                      Thuiswinst: {active.winningH}–{active.winningA}
+                    </div>
+                  )}
+                  {active.aw>active.hw&&active.losingH!==undefined&&(
+                    <div style={{fontSize:"0.52rem",color:"#f87171",marginTop:"3px",fontWeight:600}}>
+                      Uitwinst: {active.losingH}–{active.losingA}
+                    </div>
+                  )}
+                  {Math.abs(active.hw-active.aw)<0.05&&(
+                    <div style={{fontSize:"0.52rem",color:"#fbbf24",marginTop:"3px",fontWeight:600}}>
+                      Evenwichtig duel
+                    </div>
+                  )}
                 </div>
 
                 {/* Away team */}

@@ -253,7 +253,7 @@ export function UserMenu({ onShowAuth, onShowPro }) {
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", zIndex: 500 }}>
       <button onClick={() => setOpen(!open)} style={{
         padding: "0.35rem 0.7rem", borderRadius: 8, cursor: "pointer",
         background: isPro ? "rgba(0,232,122,0.1)" : "rgba(255,255,255,0.06)",
@@ -269,8 +269,8 @@ export function UserMenu({ onShowAuth, onShowPro }) {
         <div style={{
           position: "absolute", top: "calc(100% + 6px)", right: 0,
           background: C.card, border: `1px solid ${C.border}`,
-          borderRadius: 12, overflow: "hidden", minWidth: 180,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.8)", zIndex: 200,
+          borderRadius: 12, overflow: "visible", minWidth: 180,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.8)", zIndex: 500,
         }}>
           <div style={{ padding: "0.6rem 0.9rem", borderBottom: `1px solid ${C.border}` }}>
             <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)" }}>{user.email}</div>

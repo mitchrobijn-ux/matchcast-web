@@ -373,7 +373,7 @@ function GroupSimulator({ calcMatch, isPro, onShowPro }) {
       <div style={{background:"rgba(255,255,255,0.03)",borderRadius:"14px",overflow:"hidden",marginBottom:"0.75rem",border:"1px solid rgba(255,255,255,0.06)"}}>
         <div style={{padding:"0.6rem 0.9rem",borderBottom:"1px solid rgba(255,255,255,0.05)",display:"flex",justifyContent:"space-between"}}>
           <span style={{fontSize:"0.6rem",fontWeight:700,color:"rgba(255,255,255,0.3)",letterSpacing:"0.08em"}}>GROEP {selGroup} — VERWACHTE EINDSTAND</span>
-          <span style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.2)"}}>PTS · GF · GA · GD</span>
+          <span style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.2)"}}>Punten · Voor · Tegen · Saldo</span>
         </div>
         {standings.map(([team, s], i) => {
           const gd = s.gf - s.ga;
@@ -747,7 +747,8 @@ export default function MatchcastPredictor(){
     <div style={{minHeight:"100vh",background:"#0b0b17",color:"#fff",fontFamily:"'DM Sans','Segoe UI',sans-serif",paddingBottom:"2rem"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
-        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
+  html,body{overflow-x:hidden;max-width:100vw;}
         ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
         @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}

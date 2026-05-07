@@ -747,7 +747,7 @@ export default function MatchcastPredictor(){
     <div style={{minHeight:"100vh",background:"#0b0b17",color:"#fff",fontFamily:"'DM Sans','Segoe UI',sans-serif",paddingBottom:"2rem"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
-        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
+        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{overflow-x:hidden;max-width:100vw;}
         ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
         @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}

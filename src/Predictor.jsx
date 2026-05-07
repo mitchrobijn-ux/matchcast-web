@@ -828,7 +828,7 @@ export default function MatchcastPredictor(){
                     <span style={{color:"rgba(255,255,255,0.2)",margin:"0 6px",fontSize:"1.4rem"}}>:</span>
                     <span>{active.lsA}</span>
                   </div>
-                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>MEEST VOORKOMENDE UITSLAG</div>
+                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>VERWACHTE UITSLAG</div>
 
                 </div>
 
@@ -2012,7 +2012,7 @@ export default function MatchcastPredictor(){
                     <span style={{color:"rgba(255,255,255,0.2)",margin:"0 6px",fontSize:"1.4rem"}}>:</span>
                     <span>{active.lsA}</span>
                   </div>
-                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>MEEST VOORKOMENDE UITSLAG</div>
+                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>VERWACHTE UITSLAG</div>
                   
                 </div>
 

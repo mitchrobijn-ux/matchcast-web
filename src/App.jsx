@@ -23,7 +23,8 @@ const C = {
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
+  html,body{overflow-x:hidden;max-width:100vw;}
   html{scroll-behavior:smooth;}
   body{background:${C.bg};color:${C.text};font-family:'DM Sans',sans-serif;overflow-x:hidden;}
   ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}

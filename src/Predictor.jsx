@@ -305,6 +305,151 @@ function OURow({label,prob,odds}){
 }
 
 
+function GroupSimulator({ calcMatch, isPro, onShowPro }) {
+  const [selGroup, setSelGroup] = useState("A");
+
+  const WC_GROUPS = {
+    A:["Mexico","South Africa","South Korea","Czech Republic"],
+    B:["Canada","Bosnia and Herzegovina","Qatar","Switzerland"],
+    C:["Brazil","Morocco","Haiti","Scotland"],
+    D:["United States","Paraguay","Australia","Turkey"],
+    E:["Germany","Curacao","Ivory Coast","Ecuador"],
+    F:["Netherlands","Japan","Sweden","Tunisia"],
+    G:["Belgium","Egypt","Iran","New Zealand"],
+    H:["Spain","Cape Verde","Saudi Arabia","Uruguay"],
+    I:["France","Senegal","Iraq","Norway"],
+    J:["Argentina","Algeria","Austria","Jordan"],
+    K:["Portugal","Uzbekistan","DR Congo","Colombia"],
+    L:["England","Croatia","Ghana","Panama"],
+  };
+
+  const FLAGS = {"Spain":"🇪🇸","Argentina":"🇦🇷","France":"🇫🇷","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Portugal":"🇵🇹","Brazil":"🇧🇷","Netherlands":"🇳🇱","Germany":"🇩🇪","Morocco":"🇲🇦","Japan":"🇯🇵","Turkey":"🇹🇷","Croatia":"🇭🇷","Colombia":"🇨🇴","Ecuador":"🇪🇨","Senegal":"🇸🇳","Norway":"🇳🇴","Belgium":"🇧🇪","Uruguay":"🇺🇾","Mexico":"🇲🇽","Switzerland":"🇨🇭","Denmark":"🇩🇰","Poland":"🇵🇱","Australia":"🇦🇺","Iran":"🇮🇷","South Korea":"🇰🇷","Canada":"🇨🇦","United States":"🇺🇸","Ghana":"🇬🇭","Egypt":"🇪🇬","Saudi Arabia":"🇸🇦","Qatar":"🇶🇦","Serbia":"🇷🇸","Czech Republic":"🇨🇿","Austria":"🇦🇹","Sweden":"🇸🇪","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Tunisia":"🇹🇳","Ivory Coast":"🇨🇮","DR Congo":"🇨🇩","Iraq":"🇮🇶","Jordan":"🇯🇴","New Zealand":"🇳🇿","Cape Verde":"🇨🇻","Haiti":"🇭🇹","Curacao":"🇨🇼","South Africa":"🇿🇦","Panama":"🇵🇦","Paraguay":"🇵🇾","Algeria":"🇩🇿","Uzbekistan":"🇺🇿","Bosnia and Herzegovina":"🇧🇦"};
+  const f = t => FLAGS[t] || "🏳️";
+
+  const simulate = (teams) => {
+    const s = {};
+    teams.forEach(t => s[t] = {pts:0,gf:0,ga:0,played:0});
+    const matches = [];
+    for(let i=0;i<teams.length;i++) for(let j=i+1;j<teams.length;j++) {
+      const h=teams[i], a=teams[j];
+      const r=calcMatch(h,a,true,"FIFA World Cup");
+      s[h].pts += r.hw*3 + r.d*1;
+      s[a].pts += r.aw*3 + r.d*1;
+      const expH=r.lh, expA=r.la;
+      s[h].gf+=expH; s[h].ga+=expA; s[h].played++;
+      s[a].gf+=expA; s[a].ga+=expH; s[a].played++;
+      matches.push({h,a,hw:r.hw,d:r.d,aw:r.aw,expH,expA});
+    }
+    const sorted = Object.entries(s).sort((x,y)=>{
+      const ptsDiff = y[1].pts - x[1].pts;
+      if(Math.abs(ptsDiff)>0.01) return ptsDiff;
+      return (y[1].gf-y[1].ga) - (x[1].gf-x[1].ga);
+    });
+    return {standings:sorted, matches};
+  };
+
+  const teams = WC_GROUPS[selGroup];
+  const {standings, matches} = simulate(teams);
+
+  return (
+    <div>
+      <div style={{fontFamily:"'Syne',sans-serif",fontSize:"1.15rem",fontWeight:800,marginBottom:"0.2rem"}}>🔮 Groepsfase Simulator</div>
+      <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.2)",marginBottom:"0.75rem"}}>Verwachte eindstand per groep · op basis van AI model</div>
+
+      {/* Group selector */}
+      <div style={{display:"flex",gap:"0.3rem",flexWrap:"wrap",marginBottom:"1rem"}}>
+        {Object.keys(WC_GROUPS).map(g=>(
+          <button key={g} onClick={()=>setSelGroup(g)} style={{
+            padding:"0.3rem 0.6rem",
+            background:selGroup===g?"rgba(168,85,247,0.2)":"rgba(255,255,255,0.04)",
+            border:`1px solid ${selGroup===g?"rgba(168,85,247,0.4)":"rgba(255,255,255,0.07)"}`,
+            borderRadius:"7px",color:selGroup===g?"#a855f7":"rgba(255,255,255,0.35)",
+            cursor:"pointer",fontSize:"0.7rem",fontWeight:700,transition:"all 0.15s"
+          }}>{g}</button>
+        ))}
+      </div>
+
+      {/* Standings */}
+      <div style={{background:"rgba(255,255,255,0.03)",borderRadius:"14px",overflow:"hidden",marginBottom:"0.75rem",border:"1px solid rgba(255,255,255,0.06)"}}>
+        <div style={{padding:"0.6rem 0.9rem",borderBottom:"1px solid rgba(255,255,255,0.05)",display:"flex",justifyContent:"space-between"}}>
+          <span style={{fontSize:"0.6rem",fontWeight:700,color:"rgba(255,255,255,0.3)",letterSpacing:"0.08em"}}>GROEP {selGroup} — VERWACHTE EINDSTAND</span>
+          <span style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.2)"}}>PTS · GF · GA · GD</span>
+        </div>
+        {standings.map(([team, s], i) => {
+          const gd = s.gf - s.ga;
+          const isThrough = i < 2;
+          return (
+            <div key={team} style={{
+              display:"flex",alignItems:"center",gap:"0.6rem",
+              padding:"0.65rem 0.9rem",
+              background:isThrough?"rgba(34,197,94,0.04)":"transparent",
+              borderLeft:isThrough?"3px solid rgba(34,197,94,0.4)":"3px solid transparent",
+              borderBottom:i<standings.length-1?"1px solid rgba(255,255,255,0.04)":"none",
+            }}>
+              <span style={{fontSize:"0.7rem",color:isThrough?"#22c55e":"rgba(255,255,255,0.25)",fontWeight:700,width:16}}>{i+1}</span>
+              <span style={{fontSize:"1.1rem"}}>{f(team)}</span>
+              <span style={{flex:1,fontSize:"0.78rem",fontWeight:isThrough?700:400,color:isThrough?"#fff":"rgba(255,255,255,0.55)"}}>{team}</span>
+              <div style={{display:"flex",gap:"0.5rem",fontSize:"0.68rem",fontFamily:"monospace",color:"rgba(255,255,255,0.4)"}}>
+                <span style={{color:isThrough?"#22c55e":"rgba(255,255,255,0.6)",fontWeight:700}}>{s.pts.toFixed(1)}</span>
+                <span>{s.gf.toFixed(1)}</span>
+                <span>{s.ga.toFixed(1)}</span>
+                <span style={{color:gd>0?"#22c55e":gd<0?"#f87171":"rgba(255,255,255,0.4)"}}>{gd>0?"+":""}{gd.toFixed(1)}</span>
+              </div>
+            </div>
+          );
+        })}
+        <div style={{padding:"0.4rem 0.9rem",background:"rgba(34,197,94,0.04)",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
+          <span style={{fontSize:"0.55rem",color:"rgba(34,197,94,0.6)"}}>✅ Top 2 gaat door naar de knock-out fase</span>
+        </div>
+      </div>
+
+      {/* Matches */}
+      <div style={{fontSize:"0.58rem",fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginBottom:"0.4rem"}}>WEDSTRIJDEN GROEP {selGroup}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:"0.35rem"}}>
+        {matches.map((m,i)=>(
+          <div key={i} style={{padding:"0.6rem 0.75rem",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.05)",borderRadius:"10px"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.35rem"}}>
+              <span style={{fontSize:"1rem"}}>{f(m.h)}</span>
+              <span style={{fontSize:"0.75rem",fontWeight:600,flex:1}}>{m.h}</span>
+              <span style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.25)",fontFamily:"monospace"}}>{m.expH.toFixed(1)}–{m.expA.toFixed(1)}</span>
+              <span style={{fontSize:"0.75rem",fontWeight:600,flex:1,textAlign:"right"}}>{m.a}</span>
+              <span style={{fontSize:"1rem"}}>{f(m.a)}</span>
+            </div>
+            <div style={{display:"flex",borderRadius:"5px",overflow:"hidden",height:"18px",gap:"1px"}}>
+              {[{p:m.hw,c:"#22c55e"},{p:m.d,c:"#eab308"},{p:m.aw,c:"#ef4444"}].map(({p,c},idx)=>(
+                <div key={idx} style={{flex:p,background:`${c}${p===Math.max(m.hw,m.d,m.aw)?"bb":"33"}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {p===Math.max(m.hw,m.d,m.aw)&&<span style={{fontSize:"0.55rem",fontWeight:800,color:"#000"}}>{(p*100).toFixed(0)}%</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Doorstoom kansen alle groepen */}
+      <div style={{marginTop:"1rem",padding:"0.75rem",background:"rgba(168,85,247,0.05)",border:"1px solid rgba(168,85,247,0.12)",borderRadius:"12px"}}>
+        <div style={{fontSize:"0.6rem",fontWeight:700,color:"#a855f7",marginBottom:"0.5rem",letterSpacing:"0.08em"}}>🏆 KANSEN OP DOORSTOOT — ALLE GROEPEN</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.35rem"}}>
+          {Object.entries(WC_GROUPS).map(([g,teams])=>{
+            const {standings:st} = simulate(teams);
+            return (
+              <div key={g} style={{background:"rgba(255,255,255,0.03)",borderRadius:"8px",padding:"0.5rem 0.6rem"}}>
+                <div style={{fontSize:"0.58rem",fontWeight:700,color:"rgba(255,255,255,0.3)",marginBottom:"0.3rem"}}>Groep {g}</div>
+                {st.slice(0,2).map(([team],i)=>(
+                  <div key={team} style={{display:"flex",alignItems:"center",gap:"0.35rem",marginBottom:"0.15rem"}}>
+                    <span style={{fontSize:"0.75rem"}}>{f(team)}</span>
+                    <span style={{fontSize:"0.62rem",color:"#22c55e",fontWeight:600}}>{team.length>12?team.slice(0,11)+"…":team}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TrackRecord({ user, isPro, onShowPro }) {
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -625,7 +770,7 @@ export default function MatchcastPredictor(){
         <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
           <UserMenu onShowAuth={()=>setShowAuth(true)} onShowPro={()=>setShowPro(true)} />
           <div style={{display:"flex",gap:"2px",background:"rgba(255,255,255,0.04)",borderRadius:"9px",padding:"2px"}}>
-            {[["predict","⚽"],["wk","🏆"],["rankings","📊"],["track","📈"]].map(([t,ic])=>(
+            {[["predict","⚽"],["wk","🏆"],["sim","🔮"],["rankings","📊"],["track","📈"]].map(([t,ic])=>(
               <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.6rem",background:tab===t?"rgba(255,255,255,0.1)":"transparent",border:"none",borderRadius:"7px",color:tab===t?"#fff":"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"0.75rem",transition:"all 0.15s"}}>{ic}</button>
             ))}
           </div>
@@ -683,16 +828,16 @@ export default function MatchcastPredictor(){
                     <span style={{color:"rgba(255,255,255,0.2)",margin:"0 6px",fontSize:"1.4rem"}}>:</span>
                     <span>{active.lsA}</span>
                   </div>
-                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>MEEST WAARSCHIJNLIJK</div>
+                  <div style={{fontSize:"0.5rem",color:"rgba(255,255,255,0.2)",letterSpacing:"0.08em",marginTop:"4px"}}>MEEST VOORKOMENDE UITSLAG</div>
                   {/* Winnende score */}
                   {active.hw>active.aw&&active.winningH!==undefined&&(
                     <div style={{fontSize:"0.52rem",color:"#22c55e",marginTop:"3px",fontWeight:600}}>
-                      Thuiswinst: {active.winningH}–{active.winningA}
+                      Als {home} wint: {active.winningH}–{active.winningA}
                     </div>
                   )}
                   {active.aw>active.hw&&active.losingH!==undefined&&(
                     <div style={{fontSize:"0.52rem",color:"#f87171",marginTop:"3px",fontWeight:600}}>
-                      Uitwinst: {active.losingH}–{active.losingA}
+                      Als {away} wint: {active.losingH}–{active.losingA}
                     </div>
                   )}
                   {Math.abs(active.hw-active.aw)<0.05&&(
@@ -1003,6 +1148,7 @@ export default function MatchcastPredictor(){
           </div>
         </>}
       </div>
+        {tab==="sim"&&<GroupSimulator calcMatch={calcMatch} isPro={isPro} onShowPro={()=>setShowPro(true)} />}
         {tab==="track"&&<TrackRecord user={user} isPro={isPro} onShowPro={()=>setShowPro(true)} />}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       {showPro && <ProModal onClose={() => setShowPro(false)} />}

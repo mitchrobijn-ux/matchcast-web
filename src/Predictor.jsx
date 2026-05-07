@@ -305,6 +305,117 @@ function OURow({label,prob,odds}){
 }
 
 
+function DailyPicks({ isPro, onShowPro }) {
+  const [picks, setPicks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalAnalyzed, setTotalAnalyzed] = useState(0);
+
+  useEffect(() => {
+    const fetchPicks = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/daily-picks`);
+        if(res.ok) {
+          const data = await res.json();
+          setPicks(data.picks || []);
+          setTotalAnalyzed(data.total_analyzed || 0);
+        }
+      } catch(e) { console.log("Picks fout:", e); }
+      setLoading(false);
+    };
+    fetchPicks();
+  }, []);
+
+  if(!isPro) return (
+    <div style={{paddingTop:"1rem"}}>
+      <div style={{fontFamily:"'Syne',sans-serif",fontSize:"1.15rem",fontWeight:800,marginBottom:"0.2rem"}}>🎯 Dagelijkse Picks</div>
+      <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.2)",marginBottom:"1.5rem"}}>Beste value bets van vandaag · AI geselecteerd</div>
+      <ProGate onUpgrade={onShowPro} feature="Dagelijkse picks — beste value bets automatisch geselecteerd" />
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{fontFamily:"'Syne',sans-serif",fontSize:"1.15rem",fontWeight:800,marginBottom:"0.2rem"}}>🎯 Dagelijkse Picks</div>
+      <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.2)",marginBottom:"0.75rem"}}>
+        {loading ? "Analyseren..." : `${totalAnalyzed} wedstrijden geanalyseerd · Top picks van vandaag`}
+      </div>
+
+      {loading ? (
+        <div style={{textAlign:"center",padding:"2rem",color:"rgba(255,255,255,0.3)"}}>
+          <div style={{fontSize:"1.5rem",marginBottom:"0.5rem"}}>⏳</div>
+          <div style={{fontSize:"0.78rem"}}>Wedstrijden analyseren...</div>
+        </div>
+      ) : picks.length === 0 ? (
+        <div style={{textAlign:"center",padding:"2rem",background:"rgba(255,255,255,0.03)",borderRadius:"14px",border:"1px solid rgba(255,255,255,0.06)"}}>
+          <div style={{fontSize:"1.5rem",marginBottom:"0.5rem"}}>📭</div>
+          <div style={{fontSize:"0.82rem",fontWeight:700,marginBottom:"0.3rem"}}>Geen picks vandaag</div>
+          <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)"}}>Er zijn momenteel geen wedstrijden met duidelijke value</div>
+        </div>
+      ) : (
+        <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+          {picks.map((pick, i) => (
+            <div key={i} style={{
+              padding:"1rem",
+              background:pick.edge>=8?"linear-gradient(135deg,rgba(255,100,0,0.08),rgba(255,50,0,0.04))":pick.edge>=5?"linear-gradient(135deg,rgba(250,204,21,0.08),rgba(250,204,21,0.03))":"rgba(255,255,255,0.03)",
+              border:`1px solid ${pick.edge>=8?"rgba(255,100,0,0.2)":pick.edge>=5?"rgba(250,204,21,0.2)":"rgba(255,255,255,0.07)"}`,
+              borderRadius:"16px",
+            }}>
+              {/* Header */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.6rem"}}>
+                <span style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.3)"}}>{pick.sport}</span>
+                <span style={{fontSize:"0.7rem",fontWeight:700,color:pick.edge>=8?"#ff6400":pick.edge>=5?"#fbbf24":"#22c55e"}}>{pick.confidence}</span>
+              </div>
+              {/* Teams */}
+              <div style={{fontSize:"0.85rem",fontWeight:700,marginBottom:"0.5rem"}}>
+                {pick.home} vs {pick.away}
+              </div>
+              {/* Bet */}
+              <div style={{padding:"0.5rem 0.75rem",background:"rgba(0,232,122,0.08)",border:"1px solid rgba(0,232,122,0.15)",borderRadius:"10px",marginBottom:"0.5rem"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div>
+                    <div style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.4)",marginBottom:"0.15rem"}}>AANBEVOLEN BET</div>
+                    <div style={{fontSize:"0.82rem",fontWeight:700,color:"#fff"}}>{pick.betLabel}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:"1.1rem",fontWeight:800,color:"#00e87a"}}>@ {pick.betOdds}</div>
+                    <div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.4)"}}>{pick.bookmaker}</div>
+                  </div>
+                </div>
+              </div>
+              {/* Stats */}
+              <div style={{display:"flex",gap:"0.5rem",fontSize:"0.65rem"}}>
+                <div style={{flex:1,textAlign:"center",padding:"0.3rem",background:"rgba(255,255,255,0.04)",borderRadius:"7px"}}>
+                  <div style={{color:"rgba(255,255,255,0.3)"}}>Model kans</div>
+                  <div style={{fontWeight:700,color:"#fff"}}>{pick.betProb}%</div>
+                </div>
+                <div style={{flex:1,textAlign:"center",padding:"0.3rem",background:"rgba(0,232,122,0.06)",borderRadius:"7px"}}>
+                  <div style={{color:"rgba(255,255,255,0.3)"}}>Edge</div>
+                  <div style={{fontWeight:700,color:"#00e87a"}}>+{pick.edge}%</div>
+                </div>
+                <div style={{flex:1,textAlign:"center",padding:"0.3rem",background:"rgba(255,255,255,0.04)",borderRadius:"7px"}}>
+                  <div style={{color:"rgba(255,255,255,0.3)"}}>Bankroll</div>
+                  <div style={{fontWeight:700,color:"#fff"}}>{pick.edge>=8?"3-4%":pick.edge>=5?"2-3%":"1-2%"}</div>
+                </div>
+              </div>
+              {/* Kansen */}
+              <div style={{marginTop:"0.5rem",display:"flex",borderRadius:"6px",overflow:"hidden",height:"18px",gap:"1px"}}>
+                {[{p:pick.homeWin,c:"#22c55e",l:pick.home.split(" ")[0]},{p:pick.draw,c:"#eab308",l:"X"},{p:pick.awayWin,c:"#ef4444",l:pick.away.split(" ")[0]}].map(({p,c,l},idx)=>(
+                  <div key={idx} style={{flex:p,background:`${c}${p===Math.max(pick.homeWin,pick.draw,pick.awayWin)?"bb":"33"}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {p===Math.max(pick.homeWin,pick.draw,pick.awayWin)&&<span style={{fontSize:"0.55rem",fontWeight:800,color:"#000"}}>{p}%</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div style={{padding:"0.5rem",fontSize:"0.62rem",color:"rgba(255,255,255,0.25)",textAlign:"center"}}>
+            ⚠️ Picks zijn indicatief — geen garantie op winst. Gok verantwoord.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GroupSimulator({ calcMatch, isPro, onShowPro }) {
   const [selGroup, setSelGroup] = useState("A");
 
@@ -771,7 +882,7 @@ export default function MatchcastPredictor(){
         <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
           <UserMenu onShowAuth={()=>setShowAuth(true)} onShowPro={()=>setShowPro(true)} />
           <div style={{display:"flex",gap:"2px",background:"rgba(255,255,255,0.04)",borderRadius:"9px",padding:"2px"}}>
-            {[["predict","⚽"],["wk","🏆"],["sim","🔮"],["rankings","📊"],["track","📈"]].map(([t,ic])=>(
+            {[["predict","⚽"],["wk","🏆"],["sim","🔮"],["picks","🎯"],["rankings","📊"],["track","📈"]].map(([t,ic])=>(
               <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.6rem",background:tab===t?"rgba(255,255,255,0.1)":"transparent",border:"none",borderRadius:"7px",color:tab===t?"#fff":"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"0.75rem",transition:"all 0.15s"}}>{ic}</button>
             ))}
           </div>
@@ -1135,6 +1246,7 @@ export default function MatchcastPredictor(){
         </>}
       </div>
         {tab==="sim"&&<GroupSimulator calcMatch={calcMatch} isPro={isPro} onShowPro={()=>setShowPro(true)} />}
+        {tab==="picks"&&<DailyPicks isPro={isPro} onShowPro={()=>setShowPro(true)} />}
         {tab==="track"&&<TrackRecord user={user} isPro={isPro} onShowPro={()=>setShowPro(true)} />}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       {showPro && <ProModal onClose={() => setShowPro(false)} />}

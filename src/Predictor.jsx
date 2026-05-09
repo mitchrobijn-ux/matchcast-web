@@ -202,36 +202,90 @@ function getEdge(modelP,oH,oD,oA,which){
 
 
 // ── Components ────────────────────────────────────────────────────────────────
-function TeamPicker({value,onChange,side,exclude}){
-  const [open,setOpen]=useState(false);
-  const [q,setQ]=useState("");
-  const opts=useMemo(()=>ALL_TEAMS.filter(t=>t!==exclude&&t.toLowerCase().includes(q.toLowerCase())).slice(0,60),[q,exclude]);
-  return(
-    <div style={{flex:1,position:"relative"}}>
-      <button onClick={()=>setOpen(!open)} style={{width:"100%",padding:"0.85rem 0.5rem",background:value?"rgba(255,255,255,0.07)":"rgba(255,255,255,0.03)",border:`1.5px solid ${open?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.07)"}`,borderRadius:"14px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:"0.25rem",transition:"all 0.15s"}}>
-        <span style={{fontSize:"1.9rem",lineHeight:1}}>{value?f(value):(side==="home"?"🏠":"✈️")}</span>
-        <span style={{fontSize:"0.7rem",fontWeight:600,color:value?"#fff":"rgba(255,255,255,0.2)",textAlign:"center",lineHeight:1.2}}>{value||(side==="home"?"Thuis":"Uit")}</span>
-        {value&&<span style={{fontSize:"0.52rem",color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>ELO {ELO[value]||"?"}</span>}
+function TeamPicker({value, onChange, side, exclude}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const opts = useMemo(() => 
+    ALL_TEAMS.filter(t => t !== exclude && t.toLowerCase().includes(q.toLowerCase())).slice(0, 60),
+    [q, exclude]
+  );
+  const flag = t => FLAGS[t] || "🏳️";
+
+  return (
+    <div style={{flex:1, position:"relative", zIndex: open ? 999 : 1}}>
+      {/* Backdrop */}
+      {open && (
+        <div
+          onClick={() => { setOpen(false); setQ(""); }}
+          style={{position:"fixed", inset:0, zIndex:998}}
+        />
+      )}
+
+      {/* Trigger button */}
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width:"100%", padding:"0.85rem 0.5rem",
+          background: value ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.03)",
+          border: `1.5px solid ${open ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.07)"}`,
+          borderRadius:"14px", cursor:"pointer",
+          display:"flex", flexDirection:"column", alignItems:"center", gap:"0.3rem",
+        }}
+      >
+        <span style={{fontSize:"1.8rem"}}>{value ? flag(value) : (side === "home" ? "🏠" : "✈️")}</span>
+        <span style={{fontSize:"0.65rem", color: value ? "#fff" : "rgba(255,255,255,0.3)", fontWeight: value ? 600 : 400, textAlign:"center", lineHeight:1.2}}>
+          {value || (side === "home" ? "Thuis" : "Uit")}
+        </span>
       </button>
-      {open&&<div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,zIndex:400,background:"#111120",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.9)"}}>
-        <div style={{padding:"0.45rem"}}>
-          <input autoFocus value={q} onChange={e=>setQ(e.target.value)} onClick={e=>e.stopPropagation()} placeholder="🔍 Zoek land..." style={{width:"100%",padding:"0.5rem 0.7rem",background:"rgba(255,255,255,0.06)",border:"none",borderRadius:"8px",color:"#fff",fontSize:"0.8rem",outline:"none"}}/>
+
+      {/* Dropdown */}
+      {open && (
+        <div style={{
+          position:"absolute", top:"calc(100% + 6px)", left:0, right:0,
+          zIndex:999, background:"#111120",
+          border:"1px solid rgba(255,255,255,0.12)",
+          borderRadius:"12px", boxShadow:"0 20px 60px rgba(0,0,0,0.95)",
+          overflow:"hidden",
+        }}>
+          <div style={{padding:"0.5rem"}}>
+            <input
+              autoFocus
+              placeholder="Zoek land..."
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              style={{
+                width:"100%", padding:"0.5rem 0.75rem",
+                background:"rgba(255,255,255,0.08)",
+                border:"1px solid rgba(255,255,255,0.1)",
+                borderRadius:"8px", color:"#fff", fontSize:"0.8rem", outline:"none",
+              }}
+            />
+          </div>
+          <div style={{maxHeight:"220px", overflowY:"auto"}}>
+            {opts.map(t => (
+              <div
+                key={t}
+                onClick={() => { onChange(t); setOpen(false); setQ(""); }}
+                style={{
+                  padding:"0.5rem 0.75rem", cursor:"pointer",
+                  display:"flex", alignItems:"center", gap:"0.5rem",
+                  background: t === value ? "rgba(255,255,255,0.08)" : "transparent",
+                  fontSize:"0.8rem",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+                onMouseLeave={e => e.currentTarget.style.background = t === value ? "rgba(255,255,255,0.08)" : "transparent"}
+              >
+                <span style={{fontSize:"1.1rem"}}>{flag(t)}</span>
+                <span>{t}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div style={{maxHeight:"200px",overflowY:"auto"}}>
-          {opts.map(t=>(
-            <button key={t} onClick={()=>{onChange(t);setOpen(false);setQ("");}} style={{width:"100%",padding:"0.45rem 0.8rem",background:"transparent",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:"0.5rem"}}
-              onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.05)"}
-              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-              <span style={{fontSize:"1rem"}}>{f(t)}</span>
-              <span style={{flex:1,fontSize:"0.78rem",color:t===value?"#fff":"rgba(255,255,255,0.6)",fontWeight:t===value?700:400}}>{t}</span>
-              <span style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>{ELO[t]||"?"}</span>
-            </button>
-          ))}
-        </div>
-      </div>}
+      )}
     </div>
   );
 }
+
 
 function ProbBar({hw,d,aw,home,away}){
   const max=Math.max(hw,d,aw);
@@ -855,7 +909,7 @@ export default function MatchcastPredictor(){
   );
 
   return(
-    <div style={{minHeight:"100vh",background:"#0b0b17",color:"#fff",fontFamily:"'DM Sans','Segoe UI',sans-serif",paddingBottom:"2rem"}}>
+    <div style={{minHeight:"100vh",background:"#0b0b17",color:"#fff",fontFamily:"'DM Sans','Segoe UI',sans-serif",paddingBottom:"2rem",overflowX:"hidden"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -871,7 +925,7 @@ export default function MatchcastPredictor(){
       `}</style>
 
       {/* Header */}
-      <div style={{padding:"1rem 1rem 1rem",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+      <div style={{padding:"1rem 1rem 1rem",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba(255,255,255,0.05)",overflow:"visible",position:"relative",zIndex:100}}>
         <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
           <span style={{fontSize:"1.3rem"}}>⚽</span>
           <div>

@@ -236,7 +236,7 @@ export function ProModal({ onClose }) {
 
 // ── User Menu ──────────────────────────────────────────────
 export function UserMenu({ onShowAuth, onShowPro }) {
-  const { user, profile, isPro, signOut } = useAuth();
+  const { user, isPro, signOut } = useAuth();
   const [open, setOpen] = useState(false);
 
   if (!user) {
@@ -252,50 +252,61 @@ export function UserMenu({ onShowAuth, onShowPro }) {
     );
   }
 
+  const name = user.email?.split("@")[0];
+
   return (
-    <div style={{ position: "relative", zIndex: 500 }}>
-      <button onClick={() => setOpen(!open)} style={{
-        padding: "0.35rem 0.7rem", borderRadius: 8, cursor: "pointer",
-        background: isPro ? "rgba(0,232,122,0.1)" : "rgba(255,255,255,0.06)",
-        border: `1px solid ${isPro ? "rgba(0,232,122,0.3)" : C.border}`,
-        color: isPro ? C.green : "rgba(255,255,255,0.6)",
-        fontSize: "0.72rem", fontWeight: 700,
-        display: "flex", alignItems: "center", gap: "0.35rem",
-      }}>
-        {isPro ? "⚡ PRO" : "👤"} {user.email?.split("@")[0]}
+    <div style={{ position: "relative", zIndex: 999 }}>
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        style={{
+          padding: "0.35rem 0.7rem", borderRadius: 8, cursor: "pointer",
+          background: isPro ? "rgba(0,232,122,0.1)" : "rgba(255,255,255,0.06)",
+          border: `1px solid ${isPro ? "rgba(0,232,122,0.3)" : C.border}`,
+          color: isPro ? C.green : "rgba(255,255,255,0.6)",
+          fontSize: "0.72rem", fontWeight: 700,
+        }}>
+        {isPro ? "⚡" : "👤"} {name}
       </button>
 
       {open && (
-        <div style={{
-          position: "absolute", top: "calc(100% + 6px)", right: 0,
-          background: C.card, border: `1px solid ${C.border}`,
-          borderRadius: 12, overflow: "visible", minWidth: 180,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.8)", zIndex: 500,
-        }}>
-          <div style={{ padding: "0.6rem 0.9rem", borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)" }}>{user.email}</div>
-            <div style={{ fontSize: "0.72rem", fontWeight: 700, color: isPro ? C.green : "rgba(255,255,255,0.4)", marginTop: "0.2rem" }}>
-              {isPro ? "⚡ Pro lid" : "Gratis account"}
-            </div>
-          </div>
-          {!isPro && (
-            <button onClick={() => { setOpen(false); onShowPro(); }} style={{
-              width: "100%", padding: "0.6rem 0.9rem", background: "transparent",
-              border: "none", color: C.green, fontSize: "0.75rem",
-              fontWeight: 700, cursor: "pointer", textAlign: "left",
-              borderBottom: `1px solid ${C.border}`,
-            }}>
-              🚀 Upgrade naar Pro
-            </button>
-          )}
-          <button onClick={() => { setOpen(false); signOut(); }} style={{
-            width: "100%", padding: "0.6rem 0.9rem", background: "transparent",
-            border: "none", color: "rgba(255,255,255,0.4)", fontSize: "0.75rem",
-            cursor: "pointer", textAlign: "left",
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setOpen(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 998 }}
+          />
+          {/* Menu */}
+          <div style={{
+            position: "absolute", top: "calc(100% + 8px)", right: 0,
+            background: "#13132a", border: `1px solid ${C.border}`,
+            borderRadius: 12, minWidth: 190, zIndex: 999,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.9)",
           }}>
-            Uitloggen
-          </button>
-        </div>
+            <div style={{ padding: "0.7rem 1rem", borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)" }}>{user.email}</div>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: isPro ? C.green : "rgba(255,255,255,0.4)", marginTop: "0.2rem" }}>
+                {isPro ? "⚡ Pro lid" : "Gratis account"}
+              </div>
+            </div>
+            {!isPro && (
+              <button onClick={() => { setOpen(false); onShowPro(); }} style={{
+                width: "100%", padding: "0.7rem 1rem", background: "transparent",
+                border: "none", color: C.green, fontSize: "0.78rem",
+                fontWeight: 700, cursor: "pointer", textAlign: "left",
+                borderBottom: `1px solid ${C.border}`,
+              }}>
+                🚀 Upgrade naar Pro
+              </button>
+            )}
+            <button onClick={() => { setOpen(false); signOut(); }} style={{
+              width: "100%", padding: "0.7rem 1rem", background: "transparent",
+              border: "none", color: "#f87171", fontSize: "0.78rem",
+              cursor: "pointer", textAlign: "left", fontWeight: 600,
+            }}>
+              Uitloggen
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

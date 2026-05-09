@@ -243,7 +243,7 @@ export function UserMenu({ onShowAuth, onShowPro }) {
     return (
       <button onClick={onShowAuth} style={{
         padding: "0.4rem 0.8rem", background: "rgba(255,255,255,0.06)",
-        border: `1px solid ${C.border}`, borderRadius: 8,
+        border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8,
         color: "rgba(255,255,255,0.6)", fontSize: "0.72rem",
         fontWeight: 600, cursor: "pointer",
       }}>
@@ -256,44 +256,40 @@ export function UserMenu({ onShowAuth, onShowPro }) {
 
   return (
     <div style={{ position: "relative", zIndex: 999 }}>
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        style={{
-          padding: "0.35rem 0.7rem", borderRadius: 8, cursor: "pointer",
-          background: isPro ? "rgba(0,232,122,0.1)" : "rgba(255,255,255,0.06)",
-          border: `1px solid ${isPro ? "rgba(0,232,122,0.3)" : C.border}`,
-          color: isPro ? C.green : "rgba(255,255,255,0.6)",
-          fontSize: "0.72rem", fontWeight: 700,
-        }}>
+      <button onClick={() => setOpen(!open)} style={{
+        padding: "0.35rem 0.7rem", borderRadius: 8, cursor: "pointer",
+        background: isPro ? "rgba(0,232,122,0.1)" : "rgba(255,255,255,0.06)",
+        border: `1px solid ${isPro ? "rgba(0,232,122,0.3)" : "rgba(255,255,255,0.1)"}`,
+        color: isPro ? "#00e87a" : "rgba(255,255,255,0.6)",
+        fontSize: "0.72rem", fontWeight: 700,
+      }}>
         {isPro ? "⚡" : "👤"} {name}
       </button>
 
       {open && (
         <>
-          {/* Backdrop */}
-          <div
-            onClick={() => setOpen(false)}
-            style={{ position: "fixed", inset: 0, zIndex: 998 }}
-          />
-          {/* Menu */}
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 997 }} />
           <div style={{
-            position: "absolute", top: "calc(100% + 8px)", right: 0,
-            background: "#13132a", border: `1px solid ${C.border}`,
-            borderRadius: 12, minWidth: 190, zIndex: 999,
+            position: "fixed",
+            top: "56px",
+            right: "12px",
+            background: "#13132a",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 12, minWidth: 190, zIndex: 998,
             boxShadow: "0 20px 60px rgba(0,0,0,0.9)",
           }}>
-            <div style={{ padding: "0.7rem 1rem", borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ padding: "0.7rem 1rem", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
               <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)" }}>{user.email}</div>
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: isPro ? C.green : "rgba(255,255,255,0.4)", marginTop: "0.2rem" }}>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: isPro ? "#00e87a" : "rgba(255,255,255,0.4)", marginTop: "0.2rem" }}>
                 {isPro ? "⚡ Pro lid" : "Gratis account"}
               </div>
             </div>
             {!isPro && (
               <button onClick={() => { setOpen(false); onShowPro(); }} style={{
                 width: "100%", padding: "0.7rem 1rem", background: "transparent",
-                border: "none", color: C.green, fontSize: "0.78rem",
+                border: "none", borderBottom: "1px solid rgba(255,255,255,0.08)",
+                color: "#00e87a", fontSize: "0.78rem",
                 fontWeight: 700, cursor: "pointer", textAlign: "left",
-                borderBottom: `1px solid ${C.border}`,
               }}>
                 🚀 Upgrade naar Pro
               </button>

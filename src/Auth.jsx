@@ -123,7 +123,7 @@ export function AuthModal({ onClose }) {
             {mode === "signin" ? "Inloggen" : "Account aanmaken"}
           </div>
           <div style={{ fontSize: "0.75rem", color: C.textSub, marginTop: "0.3rem" }}>
-            {mode === "signin" ? "Welkom terug bij Matchcast" : "Gratis starten — geen creditcard nodig"}
+            {mode === "signin" ? "Welkom terug bij NeurBet" : "Gratis starten — geen creditcard nodig"}
           </div>
         </div>
 
@@ -193,7 +193,7 @@ export function ProModal({ onClose }) {
       }} onClick={e => e.stopPropagation()}>
         <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
           <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🚀</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 800 }}>Matchcast Pro</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800 }}>NeurBet Pro</div>
           <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", marginTop: "0.3rem" }}>
             Alles wat je nodig hebt voor het WK
           </div>
